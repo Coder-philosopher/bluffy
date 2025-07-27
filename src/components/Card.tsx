@@ -24,7 +24,6 @@ export const Card = ({
   height = 144,
   width = 112,
   borderColor = 'border-gray-500',
-  shadowColor = 'shadow-gray-900',
   selected = false,
   tabIndex,
   onClick,

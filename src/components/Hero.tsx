@@ -6,7 +6,6 @@ import { Card } from "@/components/Card";
 import Link from "next/link";
 import { useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { Home } from "lucide-react";
 
 export default function Hero() {
   const router = useRouter();

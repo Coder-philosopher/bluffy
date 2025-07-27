@@ -3,7 +3,6 @@ import { Poppins, Space_Mono } from "next/font/google";
 import "./globals.css";
 import { Toaster } from "@/components/ui/sonner";
 import 'react-toastify/dist/ReactToastify.css';
-import Link from 'next/link';
 
 
 
