@@ -1,9 +1,33 @@
 "use client";
+
 import { Button } from "@/components/ui/button";
 import { motion } from "framer-motion";
 import { Card } from "@/components/Card";
+import Link from "next/link";
+import { useEffect } from "react";
+import { useRouter } from "next/navigation";
+import { Home } from "lucide-react";
 
 export default function Hero() {
+  const router = useRouter();
+
+  // Keyboard Shortcuts
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      if (e.altKey && (e.key === "c" || e.key === "C")) {
+        router.push("/create-room");
+      }
+      if (e.altKey && (e.key === "j" || e.key === "J")) {
+        router.push("/join-room");
+      }
+      if (e.altKey && (e.key === "h" || e.key === "H")) {
+        router.push("/");
+      }
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [router]);
+
   return (
     <main className="w-full flex flex-col items-center justify-center pt-20 pb-32 px-4 relative overflow-hidden bg-gradient-to-b from-gray-950 via-gray-900 to-black">
       {/* Glassy container */}
@@ -20,88 +44,98 @@ export default function Hero() {
           Outsmart. Outplay. <span className="text-blue-400">Bluff Better.</span>
         </h1>
 
-        {/* Short and simple subtitle */}
-        <p
-          className="text-lg md:text-xl text-gray-300 text-center opacity-90 font-medium mb-12 max-w-2xl font-mono"
-        >
+        <p className="text-lg md:text-xl text-gray-300 text-center opacity-90 font-medium mb-12 max-w-2xl font-mono">
           A bold bluffing game where strategy meets deception. Play smart, win big.
         </p>
 
         {/* Buttons */}
-        <div className="flex gap-6 mb-14 flex-wrap justify-center">
-          <Button
-            size="lg"
-            className="bg-gradient-to-r from-blue-500 to-indigo-500 hover:from-blue-600 hover:to-indigo-600 font-bold px-10 py-3 rounded-xl text-lg text-gray-100 shadow-xl hover:shadow-blue-800/40 transition-all"
-            style={{ fontFamily: "var(--font-poppins)" }}
-          >
-            Create Room
-          </Button>
-          <Button
-            size="lg"
-            variant="outline"
-            className="border-2 border-blue-400 hover:border-blue-500 text-blue-300 font-bold px-10 py-3 rounded-xl text-lg shadow transition-all hover:shadow-blue-500/30"
-            style={{ fontFamily: "var(--font-poppins)" }}
-          >
-            Join Room
-          </Button>
+        <div className="flex gap-6 mb-4 flex-wrap justify-center">
+          <Link href="/create-room">
+            <Button
+              size="lg"
+              className="relative group cursor-pointer bg-gradient-to-r from-blue-500 to-indigo-500 hover:from-blue-600 hover:to-indigo-600 font-bold px-10 py-3 rounded-xl text-lg text-gray-100 shadow-xl hover:shadow-blue-800/40 transition-all focus:ring-4 focus:ring-blue-500/40"
+              style={{ fontFamily: "var(--font-poppins)" }}
+            >
+              Create Room
+             
+            </Button>
+          </Link>
+
+          <Link href="/join-room">
+            <Button
+              size="lg"
+              variant="outline"
+              className="relative group cursor-pointer border-2 border-blue-400 hover:border-blue-500 text-blue-300 font-bold px-10 py-3 rounded-xl text-lg shadow transition-all hover:shadow-blue-500/30 focus:ring-4 focus:ring-blue-500/40"
+              style={{ fontFamily: "var(--font-poppins)" }}
+            >
+              Join Room
+              
+            </Button>
+          </Link>
         </div>
 
-        {/* Card Belt Animation */}
-<div className="relative w-full overflow-hidden h-40">
-  <motion.div
-    className="absolute flex gap-4"
-    initial={{ x: 0 }}
-    animate={{ x: ["0%", "-50%"] }}
-    transition={{ duration: 12, repeat: Infinity, ease: "linear" }}
-  >
-    {[
-      "/cards/1d.svg",
-      "/cards/1s.svg",
-      "/cards/1h.svg",
-      "/cards/1c.svg",
-      "/cards/2h.svg",
-      "/cards/2d.svg",
-      "/cards/2s.svg",
-      "/cards/2c.svg",
-      "/cards/3h.svg",
-    ].map((card, index) => (
-      <Card
-        key={index}
-        src={card}
-        alt={`Card ${index}`}
-        height={130}
-        width={100}
-        className="rounded-lg shadow-[0_0_15px_rgba(59,130,246,0.4)] cursor-pointer"
-      />
-    ))}
+        {/* Back to Home Link */}
+       
 
-    {/* Repeat belt for infinite scrolling */}
-    {[
-      "/cards/1d.svg",
-      "/cards/1s.svg",
-      "/cards/1h.svg",
-      "/cards/1c.svg",
-      "/cards/2h.svg",
-      "/cards/2d.svg",
-      "/cards/2s.svg",
-      "/cards/2c.svg",
-      "/cards/3h.svg",
-    ].map((card, index) => (
-      <Card
-        key={index + 100}
-        src={card}
-        alt={`Card ${index}`}
-        height={130}
-        width={100}
-        className="rounded-lg shadow-[0_0_15px_rgba(59,130,246,0.4)] cursor-pointer"
-      />
-    ))}
-  </motion.div>
-</div>
+        {/* Shortcut Tips */}
+        <p className="mt-4 text-center text-xs text-gray-500">
+          Use{" "}
+          <kbd className="px-1 py-0.5 rounded bg-gray-800 border border-gray-700">
+            Alt + C
+          </kbd>{" "}
+          to create,{"    "}
+          <kbd className="px-1 py-0.5 rounded bg-gray-800 border border-gray-700">
+            Alt + J
+          </kbd>{" "}
+          to join,{" "}
+         
+        </p>
 
+        {/* Card Belt */}
+        <div className="relative w-full overflow-hidden h-40 mt-12">
+          <motion.div
+            className="absolute flex gap-4"
+            initial={{ x: 0 }}
+            animate={{ x: ["0%", "-50%"] }}
+            transition={{ duration: 12, repeat: Infinity, ease: "linear" }}
+          >
+            {[
+              "/cards/1d.svg",
+              "/cards/1s.svg",
+              "/cards/1h.svg",
+              "/cards/1c.svg",
+              "/cards/2h.svg",
+              "/cards/2d.svg",
+              "/cards/2s.svg",
+              "/cards/2c.svg",
+              "/cards/3h.svg",
+            ]
+              .concat([
+                "/cards/1d.svg",
+                "/cards/1s.svg",
+                "/cards/1h.svg",
+                "/cards/1c.svg",
+                "/cards/2h.svg",
+                "/cards/2d.svg",
+                "/cards/2s.svg",
+                "/cards/2c.svg",
+                "/cards/3h.svg",
+              ])
+              .map((card, index) => (
+                <Card
+                  key={index}
+                  src={card}
+                  alt={`Card ${index}`}
+                  height={130}
+                  width={100}
+                  className="rounded-lg shadow-[0_0_15px_rgba(59,130,246,0.4)] cursor-pointer transition-transform hover:scale-105"
+                />
+              ))}
+          </motion.div>
+        </div>
       </motion.div>
 
-      {/* Ambient blurred blob */}
+      {/* Ambient background blur */}
       <motion.div
         className="absolute top-1/4 left-1/2 -translate-x-1/2 -z-10 rounded-full"
         initial={{ opacity: 0, scale: 0.6 }}
@@ -110,8 +144,9 @@ export default function Hero() {
         style={{
           width: 900,
           height: 400,
-          background: "radial-gradient(ellipse at center, rgba(59,130,246,0.5) 0%, rgba(37,99,235,0.05) 100%)",
-          filter: "blur(120px)"
+          background:
+            "radial-gradient(ellipse at center, rgba(59,130,246,0.5) 0%, rgba(37,99,235,0.05) 100%)",
+          filter: "blur(120px)",
         }}
       />
     </main>
