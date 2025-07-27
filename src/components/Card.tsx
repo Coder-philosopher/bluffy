@@ -9,7 +9,8 @@ type CardProps = {
   src: string
   alt: string
   height?: number       // e.g., 144 = 9rem
-  width?: number        // e.g., 112 = 7rem
+  width?: number
+   className?: string;        // e.g., 112 = 7rem
   borderColor?: string  // Tailwind color class (no dot), e.g., 'border-gray-500'
   shadowColor?: string  // Tailwind shadow class (optional)
   selected?: boolean
@@ -28,6 +29,7 @@ export const Card = ({
   tabIndex,
   onClick,
   onKeyDown,
+  className
 }: CardProps) => {
   return (
     <motion.div
@@ -83,14 +85,14 @@ export const Card = ({
       {/* Card Image using Next.js Image */}
       <div className="relative z-10 w-full h-full rounded-lg overflow-hidden">
         <Image
-          src={src}
-          alt={alt}
-          width={width}
-          height={height}
-          draggable={false}
-          className="object-contain pointer-events-none select-none"
-          priority
-        />
+        src={src}
+        alt={alt}
+        width={width}
+        height={height}
+        draggable={false}
+        className={clsx("object-contain pointer-events-none select-none", className)}
+        priority
+      />
       </div>
 
       {/* Optional: blue radial glow if selected */}
