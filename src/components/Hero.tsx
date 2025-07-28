@@ -99,10 +99,10 @@ export default function Hero() {
             transition={{ duration: 12, repeat: Infinity, ease: "linear" }}
           >
             {[
-              "/cards/1d.svg",
-              "/cards/1s.svg",
-              "/cards/1h.svg",
-              "/cards/1c.svg",
+              "/cards/ad.svg",
+              "/cards/as.svg",
+              "/cards/ah.svg",
+              "/cards/ac.svg",
               "/cards/2h.svg",
               "/cards/2d.svg",
               "/cards/2s.svg",
@@ -110,10 +110,10 @@ export default function Hero() {
               "/cards/3h.svg",
             ]
               .concat([
-                "/cards/1d.svg",
-                "/cards/1s.svg",
-                "/cards/1h.svg",
-                "/cards/1c.svg",
+                "/cards/ad.svg",
+                "/cards/as.svg",
+                "/cards/ah.svg",
+                "/cards/ac.svg",
                 "/cards/2h.svg",
                 "/cards/2d.svg",
                 "/cards/2s.svg",

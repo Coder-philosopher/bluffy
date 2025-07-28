@@ -46,7 +46,7 @@ export default function Loading() {
             },
           }}
         >
-          {["/cards/1h.svg", "/cards/1s.svg", "/cards/1d.svg"].map((card, i) => ( // Assuming card image paths
+          {["/cards/ah.svg", "/cards/as.svg", "/cards/ad.svg"].map((card, i) => ( // Assuming card image paths
             <motion.div
               key={i}
               variants={{

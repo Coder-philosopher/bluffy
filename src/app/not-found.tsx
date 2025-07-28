@@ -41,7 +41,7 @@ export default function NotFound() {
             },
           }}
         >
-          {["/cards/1d.svg", "/cards/1h.svg", "/cards/1s.svg"].map((card, i) => (
+          {["/cards/kd.svg", "/cards/kh.svg", "/cards/ks.svg"].map((card, i) => (
             <motion.div
               key={i}
               variants={{

@@ -69,6 +69,7 @@ export default function JoinRoom() {
 
         try {
           sessionStorage.setItem("playerName", playerName); // Save player name
+          sessionStorage.setItem("roomCode", roomCode); // Save player name
         } catch {
           /* ignore */
         }
@@ -77,7 +78,7 @@ export default function JoinRoom() {
         // Delay 3 seconds before navigating
         setTimeout(() => {
           router.push(`/game/${roomCode}`);
-        }, 3000);
+        }, 1000);
       } else {
         // Handle unexpected non-200 status
         throw new Error("Server did not return OK");
