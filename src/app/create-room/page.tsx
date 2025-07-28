@@ -15,6 +15,7 @@ import { Loader2, Home, LogIn, RefreshCcw } from "lucide-react";
 import { toast } from "react-toastify";
 import axios, { AxiosError } from "axios";
 import { motion } from "framer-motion";
+import Loading from "@/components/Loading"; // Import the new Loading component
 
 const BACKEND_URL =
   process.env.NEXT_PUBLIC_BACKEND_URL ??
@@ -22,7 +23,7 @@ const BACKEND_URL =
 
 type CreateRoomResponse = {
   roomCode: string;
-  data: { playerName: string }[];
+  data: { playerName: string };
 };
 
 const VALID_COUNTS = [4, 5, 6] as const;
@@ -52,7 +53,7 @@ export default function CreateRoom() {
     const controller = new AbortController();
     abortRef.current = controller;
 
-    const timeout = setTimeout(() => controller.abort(), 15_000);
+    const timeout = setTimeout(() => controller.abort(), 15000);
 
     try {
       const response = await axios.post<CreateRoomResponse>(
@@ -62,15 +63,17 @@ export default function CreateRoom() {
       );
 
       const { roomCode, data } = response.data;
+      console.log(roomCode, data);
 
       try {
-        localStorage.setItem("playerName", data[0].playerName);
-        localStorage.setItem("roomCode", roomCode);
+        sessionStorage.setItem("playerName", data.playerName); // Changed to sessionStorage
+        sessionStorage.setItem("roomCode", roomCode); // Changed to sessionStorage
+        
       } catch {
         /* ignore */
       }
 
-      toast.success(`Room created! Code: ${roomCode}. You're ${data[0].playerName}.`);
+      toast.success(`Room created! Code: ${roomCode}. You're ${data.playerName}.`);
       router.push(`/game/${roomCode}`);
     } catch (err) {
       const axErr = err as AxiosError<any>;
@@ -126,120 +129,124 @@ export default function CreateRoom() {
         }}
       />
 
-      <motion.div
-        initial={{ opacity: 0, y: 40, scale: 0.98 }}
-        animate={{ opacity: 1, y: 0, scale: 1 }}
-        transition={{ duration: 0.5, ease: "easeOut" }}
-        className="glass-dark border border-gray-700 p-8 rounded-2xl shadow-2xl max-w-md w-full bg-black/50 backdrop-blur-xl"
-        aria-busy={isLoading}
-      >
-        <h2
-          className="text-3xl font-bold text-white mb-2 text-center"
-          style={{ fontFamily: "var(--font-spacemono)" }}
+      {isLoading ? (
+        <Loading /> // Use Loading component during isLoading
+      ) : (
+        <motion.div
+          initial={{ opacity: 0, y: 40, scale: 0.98 }}
+          animate={{ opacity: 1, y: 0, scale: 1 }}
+          transition={{ duration: 0.5, ease: "easeOut" }}
+          className="glass-dark border border-gray-700 p-8 rounded-2xl shadow-2xl max-w-md w-full bg-black/50 backdrop-blur-xl"
+          aria-busy={isLoading}
         >
-          Create a New Room
-        </h2>
-        <p className="text-gray-400 mb-8 text-center font-mono">
-          Choose player count and start bluffing!
-        </p>
+          <h2
+            className="text-3xl font-bold text-white mb-2 text-center"
+            style={{ fontFamily: "var(--font-spacemono)" }}
+          >
+            Create a New Room
+          </h2>
+          <p className="text-gray-400 mb-8 text-center font-mono">
+            Choose player count and start bluffing!
+          </p>
 
-        <Select
-          onValueChange={(value) => setPlayerCount(parseInt(value))}
-          disabled={isLoading}
-        >
-          <SelectTrigger className="w-full mb-6 bg-gray-800/70 text-white border-gray-600 focus:ring-2 focus:ring-blue-600 focus:border-blue-600">
-            <SelectValue placeholder="Select player count" />
-          </SelectTrigger>
-          <SelectContent className="bg-gray-900 text-white border border-gray-700 rounded-md">
-            <SelectItem
-              value="4"
-              className="cursor-pointer px-3 py-2 hover:bg-blue-600/30 data-[state=checked]:bg-blue-600/50 data-[state=checked]:text-white rounded-sm transition-colors"
-            >
-              4 Players
-            </SelectItem>
-            <SelectItem
-              value="5"
-              className="cursor-pointer px-3 py-2 hover:bg-blue-600/30 data-[state=checked]:bg-blue-600/50 data-[state=checked]:text-white rounded-sm transition-colors"
-            >
-              5 Players
-            </SelectItem>
-            <SelectItem
-              value="6"
-              className="cursor-pointer px-3 py-2 hover:bg-blue-600/30 data-[state=checked]:bg-blue-600/50 data-[state=checked]:text-white rounded-sm transition-colors"
-            >
-              6 Players
-            </SelectItem>
-          </SelectContent>
-        </Select>
+          <Select
+            onValueChange={(value) => setPlayerCount(parseInt(value))}
+            disabled={isLoading}
+          >
+            <SelectTrigger className="w-full mb-6 bg-gray-800/70 text-white border-gray-600 focus:ring-2 focus:ring-blue-600 focus:border-blue-600">
+              <SelectValue placeholder="Select player count" />
+            </SelectTrigger>
+            <SelectContent className="bg-gray-900 text-white border border-gray-700 rounded-md">
+              <SelectItem
+                value="4"
+                className="cursor-pointer px-3 py-2 hover:bg-blue-600/30 data-[state=checked]:bg-blue-600/50 data-[state=checked]:text-white rounded-sm transition-colors"
+              >
+                4 Players
+              </SelectItem>
+              <SelectItem
+                value="5"
+                className="cursor-pointer px-3 py-2 hover:bg-blue-600/30 data-[state=checked]:bg-blue-600/50 data-[state=checked]:text-white rounded-sm transition-colors"
+              >
+                5 Players
+              </SelectItem>
+              <SelectItem
+                value="6"
+                className="cursor-pointer px-3 py-2 hover:bg-blue-600/30 data-[state=checked]:bg-blue-600/50 data-[state=checked]:text-white rounded-sm transition-colors"
+              >
+                6 Players
+              </SelectItem>
+            </SelectContent>
+          </Select>
 
-        <Button
-          onClick={handleCreate}
-          disabled={isLoading || !isValid}
-          className="group w-full bg-gradient-to-r from-blue-500 to-indigo-500 hover:from-blue-600 hover:to-indigo-600 font-bold py-3 rounded-xl text-lg transition-all shadow-xl hover:shadow-blue-900/40 disabled:opacity-60 disabled:cursor-not-allowed"
-        >
-          {isLoading ? (
-            <>
-              <Loader2 className="mr-2 h-5 w-5 animate-spin" />
-              Creating...
-            </>
-          ) : (
-            <>Create Room</>
+          <Button
+            onClick={handleCreate}
+            disabled={isLoading || !isValid}
+            className="group w-full bg-gradient-to-r from-blue-500 to-indigo-500 hover:from-blue-600 hover:to-indigo-600 font-bold py-3 rounded-xl text-lg transition-all shadow-xl hover:shadow-blue-900/40 disabled:opacity-60 disabled:cursor-not-allowed"
+          >
+            {isLoading ? (
+              <>
+                <Loader2 className="mr-2 h-5 w-5 animate-spin" />
+                Creating...
+              </>
+            ) : (
+              <>Create Room</>
+            )}
+          </Button>
+
+          {lastError && (
+            <motion.div
+              initial={{ opacity: 0, y: 6 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="mt-4 flex items-center justify-between rounded-md border border-red-500/30 bg-red-500/10 px-3 py-2 text-sm text-red-300"
+            >
+              <span>{lastError}</span>
+              <button
+                onClick={handleCreate}
+                disabled={isLoading}
+                className="inline-flex items-center gap-1 text-red-200 hover:text-red-100 transition-colors disabled:opacity-50"
+              >
+                <RefreshCcw className="h-4 w-4" /> Retry
+              </button>
+            </motion.div>
           )}
-        </Button>
 
-        {lastError && (
-          <motion.div
-            initial={{ opacity: 0, y: 6 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="mt-4 flex items-center justify-between rounded-md border border-red-500/30 bg-red-500/10 px-3 py-2 text-sm text-red-300"
-          >
-            <span>{lastError}</span>
-            <button
-              onClick={handleCreate}
-              disabled={isLoading}
-              className="inline-flex items-center gap-1 text-red-200 hover:text-red-100 transition-colors disabled:opacity-50"
+          {/* Footer Links */}
+          <div className="mt-8 flex flex-col sm:flex-row items-center justify-center gap-3 text-sm text-gray-400">
+            <Link
+              href="/"
+              className="inline-flex items-center gap-2 hover:text-gray-200 transition-colors"
+              aria-label="Go back home (Alt+H)"
             >
-              <RefreshCcw className="h-4 w-4" /> Retry
-            </button>
-          </motion.div>
-        )}
+              <Home className="h-4 w-4" />
+              Back to Home <span className="opacity-60">(Alt+H)</span>
+            </Link>
 
-        {/* Footer Links */}
-        <div className="mt-8 flex flex-col sm:flex-row items-center justify-center gap-3 text-sm text-gray-400">
-          <Link
-            href="/"
-            className="inline-flex items-center gap-2 hover:text-gray-200 transition-colors"
-            aria-label="Go back home (Alt+H)"
-          >
-            <Home className="h-4 w-4" />
-            Back to Home <span className="opacity-60">(Alt+H)</span>
-          </Link>
+            <span className="hidden sm:inline text-gray-600">|</span>
 
-          <span className="hidden sm:inline text-gray-600">|</span>
+            <Link
+              href="/join-room"
+              className="inline-flex items-center gap-2 hover:text-gray-200 transition-colors"
+              aria-label="Join a room (Alt+J)"
+            >
+              <LogIn className="h-4 w-4" />
+              Join Room <span className="opacity-60">(Alt+J)</span>
+            </Link>
+          </div>
 
-          <Link
-            href="/join-room"
-            className="inline-flex items-center gap-2 hover:text-gray-200 transition-colors"
-            aria-label="Join a room (Alt+J)"
-          >
-            <LogIn className="h-4 w-4" />
-            Join Room <span className="opacity-60">(Alt+J)</span>
-          </Link>
-        </div>
-
-        {/* Shortcut Tips */}
-        <p className="mt-4 text-center text-xs text-gray-500">
-          Press{" "}
-          <kbd className="px-1 py-0.5 rounded bg-gray-800 border border-gray-700">
-            Enter
-          </kbd>{" "}
-          or{" "}
-          <kbd className="px-1 py-0.5 rounded bg-gray-800 border border-gray-700">
-            ⌘ / Ctrl + Enter
-          </kbd>{" "}
-          to create.
-        </p>
-      </motion.div>
+          {/* Shortcut Tips */}
+          <p className="mt-4 text-center text-xs text-gray-500">
+            Press{" "}
+            <kbd className="px-1 py-0.5 rounded bg-gray-800 border border-gray-700">
+              Enter
+            </kbd>{" "}
+            or{" "}
+            <kbd className="px-1 py-0.5 rounded bg-gray-800 border border-gray-700">
+              ⌘ / Ctrl + Enter
+            </kbd>{" "}
+            to create.
+          </p>
+        </motion.div>
+      )}
     </main>
   );
 }

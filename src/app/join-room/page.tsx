@@ -1,4 +1,4 @@
-"use client";
+'use client'
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
@@ -9,6 +9,7 @@ import { Loader2, Home, PlusCircle, RefreshCcw } from "lucide-react";
 import { toast } from "react-toastify";
 import axios, { AxiosError } from "axios";
 import { motion } from "framer-motion";
+import Loading from "@/components/Loading"; // Import the new Loading component
 
 const BACKEND_URL =
   process.env.NEXT_PUBLIC_BACKEND_URL ??
@@ -56,25 +57,39 @@ export default function JoinRoom() {
 
     try {
       const response = await axios.post<JoinRoomResponse>(
-        `${BACKEND_URL}/api/room/join/${normalizedCode}`,
+        `${BACKEND_URL}/api/room/join/${roomCode}`,
         {},
         { signal: controller.signal }
       );
 
-      const { playerName, roomCode: returnedCode } = response.data;
+      // Only redirect on success (200 OK)
+      if (response.status === 200) {
+        const { playerName } = response.data;
+        console.log("join room", playerName);
 
-      try {
-        localStorage.setItem("playerName", playerName);
-        localStorage.setItem("roomCode", returnedCode);
-      } catch {
-        /* ignore */
+        try {
+          sessionStorage.setItem("playerName", playerName); // Save player name
+        } catch {
+          /* ignore */
+        }
+
+        toast.success(`Joined room ${roomCode} as ${playerName}!`);
+        // Delay 3 seconds before navigating
+        setTimeout(() => {
+          router.push(`/game/${roomCode}`);
+        }, 3000);
+      } else {
+        // Handle unexpected non-200 status
+        throw new Error("Server did not return OK");
       }
-
-      toast.success(`Joined room ${returnedCode} as ${playerName}!`);
-      router.push(`/game/${returnedCode}`);
     } catch (err) {
       const axErr = err as AxiosError<any>;
-      if (controller.signal.aborted) {
+      
+      // Handle specific 400 error (Room Invalid or Full)
+      if (axErr.response?.status === 400) {
+        toast.error("Invalid Room Code or Room Filled");
+        setLastError("Invalid Room Code or Room Filled");
+      } else if (controller.signal.aborted) {
         toast.error("Request timed out. Please try again.");
         setLastError("Request timed out.");
       } else if (axErr.response?.data?.message) {
@@ -89,7 +104,7 @@ export default function JoinRoom() {
       clearTimeout(timeout);
       setIsLoading(false);
     }
-  }, [isValid, normalizedCode, router]);
+  }, [isValid, roomCode, router]);
 
   // Shortcuts
   useEffect(() => {
@@ -133,115 +148,118 @@ export default function JoinRoom() {
         }}
       />
 
-      {/* Card */}
-      <motion.div
-        initial={{ opacity: 0, y: 40, scale: 0.98 }}
-        animate={{ opacity: 1, y: 0, scale: 1 }}
-        transition={{ duration: 0.5, ease: "easeOut" }}
-        className="glass-dark relative border border-gray-700 p-8 rounded-2xl shadow-2xl max-w-md w-full bg-black/50 backdrop-blur-xl"
-        aria-busy={isLoading}
-        aria-live="polite"
-      >
-        <h2
-          className="text-3xl font-bold text-white mb-2 text-center"
-          style={{ fontFamily: "var(--font-spacemono)" }}
+      {isLoading ? (
+        <Loading /> // Use Loading component during isLoading
+      ) : (
+        <motion.div
+          initial={{ opacity: 0, y: 40, scale: 0.98 }}
+          animate={{ opacity: 1, y: 0, scale: 1 }}
+          transition={{ duration: 0.5, ease: "easeOut" }}
+          className="glass-dark relative border border-gray-700 p-8 rounded-2xl shadow-2xl max-w-md w-full bg-black/50 backdrop-blur-xl"
+          aria-busy={isLoading}
+          aria-live="polite"
         >
-          Join a Room
-        </h2>
-        <p className="text-gray-400 mb-8 text-center font-mono">
-          Enter your room code and jump right in.
-        </p>
-
-        <label htmlFor="roomCode" className="sr-only">
-          Room code
-        </label>
-        <Input
-          id="roomCode"
-          type="text"
-          autoComplete="off"
-          inputMode="text"
-          placeholder="Enter room code"
-          value={roomCode}
-          onChange={(e) => setRoomCode(e.target.value.toUpperCase())}
-          onPaste={(e) => {
-          const pasted = e.clipboardData.getData("text").toUpperCase().trim();
-            if (pasted) {
-              e.preventDefault();
-              setRoomCode(pasted);
-            }
-          }}
-          disabled={isLoading}
-          className="w-full mb-6 bg-gray-800/70 text-white border-gray-600 focus:ring-2 focus:ring-blue-600 focus:border-blue-600"
-        />
-
-        <Button
-          onClick={handleJoin}
-          disabled={isLoading || !isValid}
-          className="group w-full bg-gradient-to-r from-blue-500 to-indigo-500 hover:from-blue-600 hover:to-indigo-600 font-bold py-3 rounded-xl text-lg transition-all shadow-xl hover:shadow-blue-900/40 disabled:opacity-60 disabled:cursor-not-allowed"
-        >
-          {isLoading ? (
-            <>
-              <Loader2 className="mr-2 h-5 w-5 animate-spin" />
-              Joining...
-            </>
-          ) : (
-            <>Join Room</>
-          )}
-        </Button>
-
-        {lastError && (
-          <motion.div
-            initial={{ opacity: 0, y: 6 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="mt-4 flex items-center justify-between rounded-md border border-red-500/30 bg-red-500/10 px-3 py-2 text-sm text-red-300"
+          <h2
+            className="text-3xl font-bold text-white mb-2 text-center"
+            style={{ fontFamily: "var(--font-spacemono)" }}
           >
-            <span>{lastError}</span>
-            <button
-              onClick={handleJoin}
-              disabled={isLoading}
-              className="inline-flex items-center gap-1 text-red-200 hover:text-red-100 transition-colors disabled:opacity-50"
+            Join a Room
+          </h2>
+          <p className="text-gray-400 mb-8 text-center font-mono">
+            Enter your room code and jump right in.
+          </p>
+
+          <label htmlFor="roomCode" className="sr-only">
+            Room code
+          </label>
+          <Input
+            id="roomCode"
+            type="text"
+            autoComplete="off"
+            inputMode="text"
+            placeholder="Enter room code"
+            value={roomCode}
+            onChange={(e) => setRoomCode(e.target.value.toUpperCase())}
+            onPaste={(e) => {
+              const pasted = e.clipboardData.getData("text").toUpperCase().trim();
+              if (pasted) {
+                e.preventDefault();
+                setRoomCode(pasted);
+              }
+            }}
+            disabled={isLoading}
+            className="w-full mb-6 bg-gray-800/70 text-white border-gray-600 focus:ring-2 focus:ring-blue-600 focus:border-blue-600"
+          />
+
+          <Button
+            onClick={handleJoin}
+            disabled={isLoading || !isValid}
+            className="group w-full bg-gradient-to-r from-blue-500 to-indigo-500 hover:from-blue-600 hover:to-indigo-600 font-bold py-3 rounded-xl text-lg transition-all shadow-xl hover:shadow-blue-900/40 disabled:opacity-60 disabled:cursor-not-allowed"
+          >
+            {isLoading ? (
+              <>
+                <Loader2 className="mr-2 h-5 w-5 animate-spin" />
+                Joining...
+              </>
+            ) : (
+              <>Join Room</>
+            )}
+          </Button>
+
+          {lastError && (
+            <motion.div
+              initial={{ opacity: 0, y: 6 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="mt-4 flex items-center justify-between rounded-md border border-red-500/30 bg-red-500/10 px-3 py-2 text-sm text-red-300"
             >
-              <RefreshCcw className="h-4 w-4" /> Retry
-            </button>
-          </motion.div>
-        )}
+              <span>{lastError}</span>
+              <button
+                onClick={handleJoin}
+                disabled={isLoading}
+                className="inline-flex items-center gap-1 text-red-200 hover:text-red-100 transition-colors disabled:opacity-50"
+              >
+                <RefreshCcw className="h-4 w-4" /> Retry
+              </button>
+            </motion.div>
+          )}
 
-        {/* Footer actions */}
-        <div className="mt-8 flex flex-col sm:flex-row items-center justify-center gap-3 text-sm text-gray-400">
-          <Link
-            href="/"
-            className="inline-flex items-center gap-2 hover:text-gray-200 transition-colors"
-            aria-label="Go back home (Alt+H)"
-          >
-            <Home className="h-4 w-4" />
-            Back to Home <span className="opacity-60">(Alt+H)</span>
-          </Link>
+          {/* Footer actions */}
+          <div className="mt-8 flex flex-col sm:flex-row items-center justify-center gap-3 text-sm text-gray-400">
+            <Link
+              href="/"
+              className="inline-flex items-center gap-2 hover:text-gray-200 transition-colors"
+              aria-label="Go back home (Alt+H)"
+            >
+              <Home className="h-4 w-4" />
+              Back to Home <span className="opacity-60">(Alt+H)</span>
+            </Link>
 
-          <span className="hidden sm:inline text-gray-600">|</span>
+            <span className="hidden sm:inline text-gray-600">|</span>
 
-          <Link
-            href="/create-room"
-            className="inline-flex items-center gap-2 hover:text-gray-200 transition-colors"
-            aria-label="Create a new room (Alt+C)"
-          >
-            <PlusCircle className="h-4 w-4" />
-            Create Room <span className="opacity-60">(Alt+C)</span>
-          </Link>
-        </div>
+            <Link
+              href="/create-room"
+              className="inline-flex items-center gap-2 hover:text-gray-200 transition-colors"
+              aria-label="Create a new room (Alt+C)"
+            >
+              <PlusCircle className="h-4 w-4" />
+              Create Room <span className="opacity-60">(Alt+C)</span>
+            </Link>
+          </div>
 
-        {/* Tiny helper */}
-        <p className="mt-4 text-center text-xs text-gray-500">
-          Press{" "}
-          <kbd className="px-1 py-0.5 rounded bg-gray-800 border border-gray-700">
-            Enter
-          </kbd>{" "}
-          or{" "}
-          <kbd className="px-1 py-0.5 rounded bg-gray-800 border border-gray-700">
-            ⌘ / Ctrl + Enter
-          </kbd>{" "}
-          to join.
-        </p>
-      </motion.div>
+          {/* Tiny helper */}
+          <p className="mt-4 text-center text-xs text-gray-500">
+            Press{" "}
+            <kbd className="px-1 py-0.5 rounded bg-gray-800 border border-gray-700">
+              Enter
+            </kbd>{" "}
+            or{" "}
+            <kbd className="px-1 py-0.5 rounded bg-gray-800 border border-gray-700">
+              ⌘ / Ctrl + Enter
+            </kbd>{" "}
+            to join.
+          </p>
+        </motion.div>
+      )}
     </main>
   );
 }
