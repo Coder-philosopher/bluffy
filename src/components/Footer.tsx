@@ -8,8 +8,8 @@ export default function Footer() {
       </span>
       <nav className="flex gap-6">
         <a href="/privacy" className="hover:underline hover:text-blue-400">Privacy</a>
-        <a href="https://github.com/your-repo" target="_blank" rel="noopener" className="hover:underline hover:text-blue-400">GitHub</a>
-        <a href="mailto:contact@bluffy.io" className="hover:underline hover:text-blue-400">Contact</a>
+        <a href="https://github.com/Coder-philosopher/bluffy" target="_blank" rel="noopener" className="hover:underline hover:text-blue-400">GitHub</a>
+        <a href="https://x.com/abdsbit" target="_blank" rel="noopener" className="hover:underline hover:text-blue-400">X/Twitter</a>
       </nav>
     </footer>
   );
